@@ -1,42 +1,29 @@
-// タブごとのカウントを保持するオブジェクト
 let tabCounters = {};
 
-// バッジ（アイコン上の数字）を更新する関数
-function updateBadge(tabId) {
-  const count = tabCounters[tabId] || 0;
-  const text = count > 0 ? count.toString() : ""; // 0回の時は表示しない
-
-  chrome.action.setBadgeText({ text: text, tabId: tabId });
-  chrome.action.setBadgeBackgroundColor({ color: "#FF0000", tabId: tabId }); // 背景色を赤に
-}
-
-// ページ遷移・読み込みが発生したときのイベント
+// リロード検知とカウントアップ処理
 chrome.webNavigation.onCommitted.addListener((details) => {
-  // メインフレーム（ページ全体）の遷移のみを対象とする（iframeなどは無視）
   if (details.frameId !== 0) return;
-
   const tabId = details.tabId;
 
   if (details.transitionType === 'reload') {
-    // リロードの場合：カウントアップ
-    if (!tabCounters[tabId]) {
-      tabCounters[tabId] = 0;
-    }
+    if (!tabCounters[tabId]) tabCounters[tabId] = 0;
     tabCounters[tabId]++;
   } else {
-    // 通常のリンク遷移やURL入力の場合：カウントをリセット
+    // リロード以外（新しいページ遷移など）はリセット
     tabCounters[tabId] = 0;
   }
-
-  updateBadge(tabId);
 });
 
-// タブを閉じたときのクリーンアップ（メモリリーク防止）
+// タブが閉じられたらメモリを解放
 chrome.tabs.onRemoved.addListener((tabId) => {
   delete tabCounters[tabId];
 });
 
-// タブを切り替えたときに、バッジの表示をそのタブのものに更新する
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  updateBadge(activeInfo.tabId);
+// Content Script（画面側）からのメッセージを受け取る
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getCount") {
+    // そのタブの現在のカウント数を返す
+    const count = tabCounters[sender.tab.id] || 0;
+    sendResponse({ count: count });
+  }
 });
