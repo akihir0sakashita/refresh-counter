@@ -11,7 +11,7 @@ chrome.runtime.sendMessage({ action: "getCount" }, (response) => {
 function showOverlay(count) {
   // 表示用のdiv要素を作成
   const overlay = document.createElement("div");
-  overlay.innerText = `Update: ${count}`;
+  overlay.innerText = `更新回数: ${count}`;
 
   // デザイン（CSS）をJavaScriptで設定
   Object.assign(overlay.style, {
