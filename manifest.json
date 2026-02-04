@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Refresh Counter",
+  "version": "1.0",
+  "description": "現在のタブがリロードされた回数をカウントしてバッジに表示します。",
+  "permissions": [
+    "webNavigation",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Refresh Count"
+  }
+}
